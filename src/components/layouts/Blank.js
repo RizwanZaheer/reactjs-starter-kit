@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router';
 
-export default class Blank extends React.Component {
+export default class Blank extends Component {
     render() {
         return (
             <div>

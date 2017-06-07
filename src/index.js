@@ -1,16 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, hashHistory } from 'react-router';
-import routes from './config/routes';
+import { hashHistory } from 'react-router';
+import store from './stores/store';
+import { syncHistoryWithStore } from 'react-router-redux';
+import Root from './containers/Root';
 
 // Css Files
 import '../public/css/style.css';
 
-class App extends React.Component {
-  render() {
-    return (
-      <Router history={hashHistory}>{routes}</Router>
-    );
-  }
-}
-ReactDOM.render(<App />,document.getElementById('root'));
+
+/*const store = configureStore()*/
+//const history = syncHistoryWithStore(hashHistory, store)
+
+ReactDOM.render(
+	<Root store={store} history={hashHistory} />,
+	document.getElementById('app')
+);

@@ -41,10 +41,8 @@ if (isProduction) {
     publicPath: config.output.publicPath,
     hotOnly: true,
     inline: true,
-    port: 9090,
     historyApiFallback: true,
     compress: true,
-    open: true,
     stats: 'normal',
   });
 }

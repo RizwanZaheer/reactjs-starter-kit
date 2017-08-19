@@ -1,26 +1,58 @@
-const path = require('path'),
-    port = process.env.PORT || 3000,
-	webpack = require('webpack'),
-	express = require('express'),
-	config = require('./webpack.config');
+const isProduction = process.env.NODE_ENV === 'production';
+const path = require('path');
+const webpack = require('webpack');
+const WebpackDevServer = require('webpack-dev-server');
+const config = require('./webpack.config');
+const express = require('express');
 
+const port = process.env.PORT || 9000;
 
-const app = express();
+let app;
 const compiler = webpack(config);
 
-app.use(require('webpack-dev-middleware')(compiler, {
-  publicPath: config.output.publicPath
-}));
+if (isProduction) {
+  const gzipFiles = ['.js'];
+  app = express();
+  app.get(gzipFiles, (req, res) => {
+    res.set('Content-Encoding', 'gzip');
+  });
+  app.use('/assets', express.static(`${__dirname}/assets`));
+  app.get('*.js', (req, res) => {
+    res.sendFile(path.join(__dirname, `dist/${req.url}`));
+  });
+  app.get('*.css', (req, res) => {
+    res.sendFile(path.join(__dirname, `dist/${req.url}`));
+  });
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist/index.html'));
+  });
+} else {
+  app = express();
+  app.use(require('webpack-dev-middleware')(compiler, {
+    publicPath: config.output.publicPath,
+    historyApiFallback: true,
+    compress: true,
+  }));
+  app.use(require('webpack-hot-middleware')(compiler));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'src/index.html'));
+  });
+  app = new WebpackDevServer(webpack(config), {
+    publicPath: config.output.publicPath,
+    hotOnly: true,
+    inline: true,
+    port: 9090,
+    historyApiFallback: true,
+    compress: true,
+    open: true,
+    stats: 'normal',
+  });
+}
 
-app.use(require('webpack-hot-middleware')(compiler));
-
-app.get('*', function(req, res) {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
 
 app.listen(port, (err) => {
   if (err) {
     return console.error(err);
   }
-  console.log(`Listening at http://localhost:${port}/`);
-})
+  return console.log(`Listening at http://localhost:${port}/`);
+});
